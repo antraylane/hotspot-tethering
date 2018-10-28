@@ -7,12 +7,15 @@ $mangle = array(
     'iptables -t mangle -N redsocks_out',
     'iptables -t mangle -A redsocks_lan -d 0/8 -j ACCEPT',
     'iptables -t mangle -A redsocks_lan -d 10/8 -j ACCEPT',
+    'iptables -t mangle -A redsocks_lan -d 100.64/10 -j ACCEPT',
     'iptables -t mangle -A redsocks_lan -d 127/8 -j ACCEPT',
     'iptables -t mangle -A redsocks_lan -d 169.254/16 -j ACCEPT',
-    'iptables -t mangle -A redsocks_lan -d 172.168/12 -j ACCEPT',
+    'iptables -t mangle -A redsocks_lan -d 172.16/12 -j ACCEPT',
     'iptables -t mangle -A redsocks_lan -p udp -d 192.168/16 ! --dport 53 -j ACCEPT',
     'iptables -t mangle -A redsocks_lan -d 224/4 -j ACCEPT',
     'iptables -t mangle -A redsocks_lan -d 240/4 -j ACCEPT',
+    'iptables -t mangle -A redsocks_lan -d 255.255.255.255 -j ACCEPT',
+    'iptables -t mangle -A redsocks_lan -p udp multiport --dport 67:69 -j ACCEPT',
     'iptables -t mangle -A redsocks_pre -j redsocks_lan',
     'iptables -t mangle -A redsocks_pre -p udp -j TPROXY --on-port 1024 --on-ip 0.0.0.0 --tproxy-mark 0x2333/0x2333',
     // 新建路由表 123，将所有数据包发往 loopback 网卡
@@ -47,7 +50,7 @@ $nat = array(
     'iptables -t nat -A pre_forward -j adblock_forward',
     'iptables -t nat -A pre_forward -j proxy_forward',
     'iptables -t nat -A pre_forward -j out_forward',
-    'iptables -t nat -A PREROUTING -s 192.168/16 -j pre_forward'
+    'iptables -t nat -A PREROUTING -s 192.168/16 ! -d 192.168/16 -j pre_forward'
 );
 $filter = array(
     //filter表
@@ -63,7 +66,7 @@ $stop_iptables = array(
     'ip route del local 0/0 dev lo table 123',
     'iptables -t mangle -D PREROUTING -j redsocks_pre',
     'iptables -t mangle -D OUTPUT -j redsocks_out',
-    'iptables -t nat -D PREROUTING -s 192.168/16 -j pre_forward',
+    'iptables -t nat -D PREROUTING -s 192.168/16 ! -d 192.168/16 -j pre_forward',
     'iptables -t nat -D OUTPUT -j out_lan',
     'iptables -t filter -D INPUT -j user_block',
     'iptables -t filter -D OUTPUT -p icmp -j DROP',
@@ -219,4 +222,3 @@ function iptables_stop($stop_iptables) {
 }
 
 ?>
-

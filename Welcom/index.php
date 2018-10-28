@@ -30,8 +30,8 @@ foreach ($data as $key => $value) {
         $ipaddress = $info['ip_address'];
         $macaddress = $info['mac_address'];
         $status = $info['status'];
-        $uptime = $info['up_time'];
-        echo "<tr><td><a href=\"javascript:toast('登录IP: $ipaddress 上线时间: $uptime')\">$user</a></td><td>$macaddress<br><span onclick=\"activation('$macaddress')\" style=\"color:green\">激活</span>&nbsp&nbsp&nbsp<a href=\"javascript:block('$macaddress')\" class=\"ui-txt-highlight\">拉黑</a>&nbsp&nbsp&nbsp<a href=\"javascript:deleted('$macaddress')\" class=\"ui-txt-warning\">删除</a></td><td><a href=\"javascript:status('$status')\" class=\"ui-txt-feeds\">$status</a></td></tr>";
+        $uptime = $info['reg_time'];
+        echo "<tr><td><a href=\"javascript:toast('登录IP: $ipaddress 注册时间: $uptime')\">$user</a></td><td>$macaddress<br><span onclick=\"activation('$macaddress')\" style=\"color:green\">激活</span>&nbsp&nbsp&nbsp<a href=\"javascript:block('$macaddress')\" class=\"ui-txt-highlight\">拉黑</a>&nbsp&nbsp&nbsp<a href=\"javascript:deleted('$macaddress')\" class=\"ui-txt-warning\">删除</a></td><td><a href=\"javascript:status('$status')\" class=\"ui-txt-feeds\">$status</a></td></tr>";
     }
 }
 ?>

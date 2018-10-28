@@ -1,7 +1,6 @@
 <?php
 require '../Admin/main.class.php';
 $receive = htmlspecialchars($_POST['receive']);
-$pkill = toolbox_check() [1] . ' pkill';
 if (!file_exists('verysync')) {
     die("{\"a\": \"程序主文件不见了！\",\"b\": 1}");
 }
@@ -27,7 +26,6 @@ if (isset($receive) and $receive == 'start') {
   shell_input($run,'微力同步启动');
 }
 if (isset($receive) and $receive == 'stop') {
-  $run = $pkill . ' verysync';
-  shell_input($run,'微力同步停止');
+  shell_input('pkill verysync','微力同步停止');
 }
 ?>

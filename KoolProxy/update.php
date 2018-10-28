@@ -27,7 +27,7 @@ foreach ($file as $value) {
             }
         } else {
             echo $value . " 无需更新！\n";
-            unlink($value);
+            @unlink($value);
         }
     } else {
         die('下载 ' . $value . " 时失败，请检查网络！\n");

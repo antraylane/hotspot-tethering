@@ -34,18 +34,20 @@ if ($user_ip && $user_mac && $login) {
               die('你已被网络管理员拉黑！');
               $fhts='block';
             }
+            /*
             if ($macaddress == $user_mac) { 
               die('你已经登录过了，如果无法上网请联系网络管理员！');
               $fhts='exist';
             }            
+            */
         }
     }
 }
 
 if (empty($fhts) && $user_ip && $user_mac && $login) {
   file_put_contents('user.json', json_encode(user_add($data, $user_count, $date, $user_ip, $user_mac)), LOCK_EX);
-  $command_run="iptables -t nat -I user_portal -s $user_ip -m mac --mac-source $user_mac -j RETURN";
-  shell_exec("su -c $command_run");
+  $command_run="iptables -t nat -D user_portal -s $user_ip -m mac --mac-source $user_mac -j RETURN".PHP_EOL."iptables -t nat -I user_portal -s $user_ip -m mac --mac-source $user_mac -j RETURN";
+  run_script($tmp_file, $command_run);
   header("Location: http://www.google.com/ncr");
 }
 ?>

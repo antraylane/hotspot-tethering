@@ -18,65 +18,61 @@ lan_list=(
 198.51.100.0/24
 203.0.113.0/24
 224.0.0.0/3
-255.255.255.255/32
 )
 
 ss_nat()
 (
-iptables -t nat -N shadowsocks_pre
-iptables -t nat -N shadowsocks_lan
-iptables -t nat -N shadowsocks_out
+iptables -t nat -N nat_pre
+iptables -t nat -N nat_lan
+iptables -t nat -N nat_out
+iptables -t nat -N shadowsocks
 iptables -t nat -N user_portal
 iptables -t nat -N adblock_forward
 iptables -t nat -N tor_forward
-iptables -t nat -N proxy_forward
+iptables -t nat -A nat_pre -j nat_lan
+iptables -t nat -A nat_pre -j user_portal
+iptables -t nat -A nat_pre -j adblock_forward
+iptables -t nat -A nat_pre -j tor_forward
+iptables -t nat -A nat_pre -j shadowsocks
+iptables -t nat -A PREROUTING -j nat_pre
 for i in ${lan_list[@]}
 do
-  iptables -t nat -A shadowsocks_lan -d $i -j ACCEPT
+  iptables -t nat -A nat_lan -d $i -j ACCEPT
 done
-iptables -t nat -A shadowsocks_lan -m owner --uid-owner 0 -d $server -j ACCEPT
-iptables -t nat -A shadowsocks_lan -m owner --uid-owner 3004 -j ACCEPT
-for i in ${lan_list[@]}
-do
-  iptables -t nat -A shadowsocks_pre -d $i -j ACCEPT
-done
-iptables -t nat -A shadowsocks_pre -j user_portal
-iptables -t nat -A shadowsocks_pre -j adblock_forward
-iptables -t nat -A shadowsocks_pre -j tor_forward
-iptables -t nat -A shadowsocks_pre -j proxy_forward
-iptables -t nat -A proxy_forward -p tcp -j REDIRECT --to-ports 1024
+iptables -t nat -A nat_out -j nat_lan
+iptables -t nat -A nat_out -m owner --uid-owner 0 -d $server -j ACCEPT
+iptables -t nat -A nat_out -m owner --uid-owner 3004 -j ACCEPT
+iptables -t nat -A nat_out -m owner ! --uid-owner 0 -j adblock_forward
+iptables -t nat -A nat_out -m owner ! --uid-owner $server_uid -j tor_forward
+iptables -t nat -A nat_out -j shadowsocks
+iptables -t nat -A OUTPUT -j nat_out
+iptables -t nat -A shadowsocks -p tcp -j REDIRECT --to-ports 1024
 if [[ $remote_dns_forward = 'on' && $remote_dns ]]; then
-  iptables -t nat -A proxy_forward -p udp --dport 53 -j DNAT --to-destination $remote_dns
+  iptables -t nat -A shadowsocks -p udp --dport 53 -j DNAT --to-destination $remote_dns
 else
-  iptables -t nat -A proxy_forward -p udp --dport 53 -j REDIRECT --to-ports 1053
+  iptables -t nat -A shadowsocks -p udp --dport 53 -j REDIRECT --to-ports 1053
 fi
 if [ $udp = 'drop' ]; then
-  iptables -t nat -A proxy_forward -p udp ! --dport 53 -j DNAT --to-destination 127.0.0.1
+  iptables -t nat -A shadowsocks -p udp ! --dport 53 -j DNAT --to-destination 127.0.0.1
 fi
-iptables -t nat -A PREROUTING -j shadowsocks_pre
-iptables -t nat -A shadowsocks_out -j shadowsocks_lan
-iptables -t nat -A shadowsocks_out -p tcp -m owner ! --uid-owner 0 -j adblock_forward
-iptables -t nat -A shadowsocks_out -m owner ! --uid-owner $server_uid -j tor_forward
-iptables -t nat -A shadowsocks_out -j proxy_forward
-iptables -t nat -A OUTPUT -j shadowsocks_out
 )
 
 ss_mangle()
 (
 iptables -t mangle -N redsocks_pre
-iptables -t mangle -N redsocks_lan
+iptables -t mangle -N mangle_lan
 iptables -t mangle -N redsocks_out
 for i in ${lan_list[@]}
 do
-  iptables -t mangle -A redsocks_lan -d $i -j ACCEPT
+  iptables -t mangle -A mangle_lan -d $i -j ACCEPT
 done
-#iptables -t mangle -A redsocks_lan -p udp -m multiport --dport 67:69 -j ACCEPT
-iptables -t mangle -A redsocks_pre -j redsocks_lan
+iptables -t mangle -A redsocks_pre -j mangle_lan
 iptables -t mangle -A redsocks_pre -p udp -j TPROXY --on-port 1024 --on-ip 0.0.0.0 --tproxy-mark 0x2333/0x2333
 iptables -t mangle -A PREROUTING -j redsocks_pre
-iptables -t mangle -A redsocks_out -j redsocks_lan
+iptables -t mangle -A redsocks_out -j mangle_lan
 iptables -t mangle -A redsocks_out -m owner --uid-owner 0 -d $server -j ACCEPT
 iptables -t mangle -A redsocks_out -m owner --uid-owner 3004 -j ACCEPT
+iptables -t mangle -A redsocks_out -p udp -j MARK --set-mark 0x2333/0x2333
 iptables -t mangle -A OUTPUT -j redsocks_out
 
 ip route add local 0/0 dev lo table 123
@@ -94,14 +90,15 @@ fi
 
 ss_status()
 (
-iptables -vxn -t nat -L shadowsocks_pre --line-number
-iptables -vxn -t nat -L shadowsocks_lan --line-number
+iptables -vxn -t nat -L nat_pre --line-number
+iptables -vxn -t nat -L nat_lan --line-number
+iptables -vxn -t nat -L nat_out --line-number
+iptables -vxn -t nat -L shadowsocks --line-number
 iptables -vxn -t nat -L user_portal --line-number
 iptables -vxn -t nat -L adblock_forward --line-number
 iptables -vxn -t nat -L tor_forward --line-number
-iptables -vxn -t nat -L proxy_forward --line-number
 iptables -vxn -t mangle -L redsocks_pre --line-number
-iptables -vxn -t mangle -L redsocks_lan --line-number
+iptables -vxn -t mangle -L mangle_lan --line-number
 iptables -vxn -t mangle -L redsocks_out --line-number
 iptables -vxn -t filter -L user_block --line-number
 )
@@ -113,31 +110,31 @@ ip route del local 0/0 dev lo table 123
 #
 iptables -t mangle -D PREROUTING -j redsocks_pre
 iptables -t mangle -D OUTPUT -j redsocks_out
-iptables -t nat -D PREROUTING -j shadowsocks_pre
-iptables -t nat -D OUTPUT -j shadowsocks_out
+iptables -t nat -D PREROUTING -j nat_pre
+iptables -t nat -D OUTPUT -j nat_out
 iptables -t filter -D INPUT -j user_block
 #
 iptables -t mangle -F redsocks_pre
-iptables -t mangle -F redsocks_lan
+iptables -t mangle -F mangle_lan
 iptables -t mangle -F redsocks_out
 iptables -t mangle -X redsocks_pre
-iptables -t mangle -X redsocks_lan
+iptables -t mangle -X mangle_lan
 iptables -t mangle -X redsocks_out
 #
-iptables -t nat -F shadowsocks_pre
-iptables -t nat -F shadowsocks_lan
-iptables -t nat -F shadowsocks_out
+iptables -t nat -F nat_pre
+iptables -t nat -F nat_lan
+iptables -t nat -F nat_out
+iptables -t nat -F shadowsocks
 iptables -t nat -F user_portal
 iptables -t nat -F adblock_forward
 iptables -t nat -F tor_forward
-iptables -t nat -F proxy_forward
-iptables -t nat -X shadowsocks_pre
-iptables -t nat -X shadowsocks_lan
-iptables -t nat -X shadowsocks_out
+iptables -t nat -X nat_pre
+iptables -t nat -X nat_lan
+iptables -t nat -X nat_out
+iptables -t nat -X shadowsocks
 iptables -t nat -X user_portal
 iptables -t nat -X adblock_forward
 iptables -t nat -X tor_forward
-iptables -t nat -X proxy_forward
 #
 iptables -t filter -F user_block
 iptables -t filter -X user_block

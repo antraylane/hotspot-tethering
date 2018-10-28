@@ -35,7 +35,7 @@ while :; do
       pid=$(pgrep $i)
       if [ $((pid)) -lt 100 ]; then
         echo "$(now_time)  $i 没有运行,开始重启运行脚本..."
-        if [ $i = $last_status && ${#daemon_list[@]} -gt 1 ]]; then
+        if [[ $i = $last_status && ${#daemon_list[@]} -gt 1 ]]; then
           echo "$(now_time)  再次重启脚本 $i 也没有运行成功，强制退出！"
           exit 1
         else        

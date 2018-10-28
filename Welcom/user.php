@@ -58,7 +58,7 @@ function user_add($data, $user_count, $date, $user_ip, $user_mac) {
             'ip_address' => $user_ip,
             'mac_address' => $user_mac,
             'status' => 'OK',
-            'up_time' => $date
+            'reg_time' => $date
         )
     );
     array_push($data, $add_user);

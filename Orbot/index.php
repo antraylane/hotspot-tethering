@@ -50,7 +50,7 @@ if (isset($receive) and $receive == 'start') {
     if ($return_val != 0) {
         die("{\"a\": \"tor启动失败！返回值: $return_val\",\"b\": 1}");
     } else {
-        $yx = 'iptables -t nat -F tor_forward' . PHP_EOL . 'iptables -t nat -A tor_forward -p tcp -j REDIRECT --to-ports 9040' . PHP_EOL . 'iptables -t nat -A tor_forward -p udp --dport 53 -j REDIRECT --to-ports 5400' . PHP_EOL;
+        $yx = 'iptables -t nat -F tor_forward' . PHP_EOL . 'iptables -t nat -A tor_forward -p tcp -j REDIRECT --to-ports 9040' . PHP_EOL;
         zx_input($yxfile, $yx, 'tor启动');
     }
 }

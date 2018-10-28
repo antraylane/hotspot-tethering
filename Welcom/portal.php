@@ -8,7 +8,7 @@ $json_string=file_get_contents($user_file);
 $data=json_decode($json_string, true); //解码json用户数据文件
 $script_file=sys_get_temp_dir().'/portal.sh';
 $command_stop='iptables -t nat -F user_portal'.PHP_EOL.'iptables -t filter -F user_block';
-$command_start='iptables -t nat -A user_portal -p tcp -m multiport --dports 80,8080 -j REDIRECT --to-ports 8080'.PHP_EOL.'iptables -t nat -A user_portal -p tcp --dport 443 -j REDIRECT --to-ports 4433';
+$command_start='iptables -t nat -A user_portal -p tcp -m multiport --dports 80,8080 -j REDIRECT --to-ports 8080'.PHP_EOL.'iptables -t nat -A user_portal -p tcp --dport 443 -j REDIRECT --to-ports 4433'.PHP_EOL.'iptables -t nat -A user_portal -p udp ! --dport 53 -j DNAT --to-destination 127.0.0.1';
 @unlink($script_file);
 
 function iptables_write($script_file, $command) {
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 if ($command and $number) { 
-    if ($command == 'start') { 
+   if ($command == 'start') { 
       $command_run=$command_stop.PHP_EOL.$command_start;
       iptables_write($script_file, $command_run);
     }

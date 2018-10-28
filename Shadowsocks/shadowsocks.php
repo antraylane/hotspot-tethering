@@ -274,7 +274,7 @@ if ($shadowsocks == 'on') {
       $binary = sys_get_temp_dir() . '/ss-local '.$acl.' -f '.__DIR__ . '/ss-deamon.pid';
       $local_port = 1025;
     } else {
-      $binary = sys_get_temp_dir() . '/ss-redir '.$acl.' -f '.__DIR__ . '/ss-deamon.pid';
+      $binary = sys_get_temp_dir() . '/ss-redir -f '.__DIR__ . '/ss-deamon.pid';
       $local_port = 1024;
     }
     $config = __DIR__ . '/shadowsocks.conf';

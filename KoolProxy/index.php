@@ -30,8 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $run_ipt = '80,443,8080';
     } elseif ($guolv == 'http') {
         $run_ipt = '80,8080';
-    } elseif ($guolv == 'video') {
-        $run_ipt = '80,8080';
     }
 }
 if (isset($usergz)) {
@@ -39,7 +37,7 @@ if (isset($usergz)) {
 }
 function zx_input($yxfile, $yx) {
     if (file_exists($yxfile) or is_executable($yxfile)) {
-        unlink($yxfile);
+        @unlink($yxfile);
     }
     file_put_contents($yxfile, $yx);
     chmod($yxfile, 0700);
@@ -54,10 +52,9 @@ if (binary_status("koolproxy")) {
 }
 if (isset($guolv)) {
     if ($koolproxy == 'on') {
-        if ($guolv == 'video') {
-            $e = '-e';
-        }
-        $yx = $jsyx . PHP_EOL . $binary_file . ' -p 1029 -b ' . __DIR__ . " $e -d" . PHP_EOL . "iptables -t nat -A adblock_forward -p tcp -m multiport --dports $run_ipt -j REDIRECT --to-ports 1029";
+        $yx = $jsyx . PHP_EOL . $binary_file . ' -p 1029 -b ' . __DIR__ . ' -d' . PHP_EOL . "iptables -t nat -A adblock_forward -p tcp -m multiport --dports $run_ipt -j REDIRECT --to-ports 1029";
+        //iptables -t nat -A adblock_forward -j LOG --log-prefix "{NL}" --log-uid
+        //grep '{NL}' /proc/kmsg
         zx_input($yxfile, $yx);
     }
     if (empty($koolproxy) and $guolv) {
@@ -83,7 +80,7 @@ if (isset($guolv)) {
                 </ul>
                 <ul class="ui-tab-content" style="width:300%">
                     <li>
-                    <div class="ui-form ui-border-t"><form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="POST" id="form"><div class="ui-form-item ui-form-item-switch ui-border-b"><p><b>服务开关:</b></p><label class="ui-switch"><input type="checkbox" id="koolproxy" name="koolproxy"></label></div><div class="ui-form-item ui-border-b"><label><b>选择过滤模式:</b></label><div class="ui-select-group"><div class="ui-select"><select id="guolv" name="guolv"><option value="all">全局模式</option><option value="http" selected="">http模式</option><option value="video">视频模式</option></select></div></div></div><div class="ui-btn-wrap"><button onclick="tijiaoCookie()" class="ui-btn-lg ui-btn-primary">提交</button></div></form></div><br><ul class="ui-row"><li class="ui-col ui-col-25"><a onclick="update()"><p class="ui-txt-highlight">规则更新</p></a></li><li class="ui-col ui-col-25"><a href="https://github.com/koolproxy/koolproxy_rules"><p class="ui-txt-highlight">规则反馈</p></a></li><li class="ui-col ui-col-25"><a href="http://110.110.110.110"><p class="ui-txt-highlight">证书下载</p></a></li><li class="ui-col ui-col-25"><a href="http://koolshare.cn/thread-80430-1-1.html" target="_blank"><p class="ui-txt-highlight">过滤教程</p></a></li></ul>
+                    <div class="ui-form ui-border-t"><form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="POST" id="form"><div class="ui-form-item ui-form-item-switch ui-border-b"><p><b>服务开关:</b></p><label class="ui-switch"><input type="checkbox" id="koolproxy" name="koolproxy"></label></div><div class="ui-form-item ui-border-b"><label><b>选择过滤模式:</b></label><div class="ui-select-group"><div class="ui-select"><select id="guolv" name="guolv"><option value="all">全局模式</option><option value="http" selected="">http模式</option></select></div></div></div><div class="ui-btn-wrap"><button onclick="tijiaoCookie()" class="ui-btn-lg ui-btn-primary">提交</button></div></form></div><br><ul class="ui-row"><li class="ui-col ui-col-25"><a onclick="update()"><p class="ui-txt-highlight">规则更新</p></a></li><li class="ui-col ui-col-25"><a href="https://github.com/koolproxy/koolproxy_rules"><p class="ui-txt-highlight">规则反馈</p></a></li><li class="ui-col ui-col-25"><a href="http://110.110.110.110"><p class="ui-txt-highlight">证书下载</p></a></li><li class="ui-col ui-col-25"><a href="http://koolshare.cn/thread-80430-1-1.html" target="_blank"><p class="ui-txt-highlight">过滤教程</p></a></li></ul>
                    </li>
                     <li>
                     <textarea rows="35" style="width:99%" cols="40" name="usergz" form="form_user" placeholder="自定义广告规则"><?php echo file_get_contents('rules/user.txt'); ?></textarea><form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="POST" id="form_user"><button class="ui-btn-lg ui-btn-primary">保存规则</button><button type="reset" class="ui-btn-lg">重置输入</button></form>
