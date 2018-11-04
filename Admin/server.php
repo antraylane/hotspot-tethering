@@ -46,26 +46,26 @@ function network_interface_card() {
 }    
 
 function memory() {
- foreach (explode(PHP_EOL, file_get_contents('/proc/meminfo')) as $key) {
-     $key=explode(':', $key);
-     foreach (explode('kB', $key[1]) as $value) {
-     $value=trim($value);
+  foreach (explode(PHP_EOL, file_get_contents('/proc/meminfo')) as $key) {
+    $key=explode(':', $key);
+    foreach (explode('kB', $key[1]) as $value) {
+      $value=trim($value);
          if ($value > 0) { 
-            if ($key[0]=='MemTotal') {
-            $MemTotal=$value;
-            }
-            if ($key[0]=='MemFree') {
-            $MemFree=$value;
-            }
-            if ($key[0]=='Buffers') {
-            $Buffers=$value;
-            }
-            if ($key[0]=='Cached') {
-            $Cached=$value;
-            }
-         }
-      }
-   }
+           if ($key[0]=='MemTotal') {
+             $MemTotal=$value;
+           }
+           if ($key[0]=='MemFree') {
+             $MemFree=$value;
+           }
+           if ($key[0]=='Buffers') {
+             $Buffers=$value;
+           }
+           if ($key[0]=='Cached') {
+             $Cached=$value;
+           }
+        }
+     }
+  }
   $free=($MemFree+$Buffers+$Cached);
   $ram_free=round($free/1024,2); //剩余内存(MB)
   $ram_rate=round(($free/$MemTotal)*100,2); //剩余内存百分比
@@ -74,17 +74,19 @@ function memory() {
 } 
 
 function cpu_activity() {
-  $stat_file = file('/proc/stat');
+  $stat_file = @file('/proc/stat');
   $cpu_data=explode(' ', $stat_file[0]);
   $totalCPUTime=0;
+  $idle=$cpu_data[5];
   for($i = 0; $i < count($cpu_data); $i++)
   {
      if ($cpu_data[$i]>0) {
-     $totalCPUTime=$cpu_data[$i]+$totalCPUTime;
-     $idle=$cpu_data[5];
+       $totalCPUTime=$cpu_data[$i]+$totalCPUTime;       
      }
   }
-  return array($totalCPUTime,$idle);
+  if ($totalCPUTime>0&&$idle>0) {
+    return array($totalCPUTime,$idle);
+  }
 }
 
 function size_unit()
@@ -145,13 +147,17 @@ $Tb_Size=size_unit($Transmit_bytes);
 list($ram_free, $ram_rate, $mem_total) = memory();
 
 //CPU信息采样
-list($Total_1, $SYS_IDLE_1) = cpu_activity();
-sleep(1);
-list($Total_2, $SYS_IDLE_2) = cpu_activity();
-$SYS_IDLE=($SYS_IDLE_2-$SYS_IDLE_1);
-$Total=($Total_2-$Total_1);
-$SYS_USAGE=($SYS_IDLE/$Total) * 100;
-$SYS_Rate=round(100-$SYS_USAGE,2);
+if (cpu_activity() != null) {
+  list($Total_1, $SYS_IDLE_1) = cpu_activity();
+  sleep(1);
+  list($Total_2, $SYS_IDLE_2) = cpu_activity();
+  $SYS_IDLE=($SYS_IDLE_2-$SYS_IDLE_1);
+  $Total=($Total_2-$Total_1);
+  $SYS_USAGE=($SYS_IDLE/$Total) * 100;
+  $SYS_Rate=round(100-$SYS_USAGE,2);
+} else {
+  $SYS_Rate=0;
+}
 
 //TCP连接数统计
 $tcp_conntrack=count(file('/proc/net/tcp'))-1;

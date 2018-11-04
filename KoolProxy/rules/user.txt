@@ -71,3 +71,4 @@ www.quanben.io##amp-ad
 |https://m.tool.chinaz.com
 |i.w.inmobi.com/showad.asm
 |adserviceretry.kglink.cn
+|kpush.kuaipan.cn
