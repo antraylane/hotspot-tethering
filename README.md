@@ -1,10 +1,10 @@
 # hotspot-tethering
 ## 安卓热点管理 
      
+     
+安装ksweb然后下载项目文件替换掉／sdcard下的htdocs文件夹📁下的文件  
 后台管理地址为 http://localhost:8080/Admin/  
 用户名和密码都是 __admin__ 放在 **/Admin/admin.php**  
-~~手机 -> 路由器中继 -> 热点机~~  
-暂时没找到方法  
      
 ### 推荐环境配置
 - ksweb安卓版
@@ -12,14 +12,6 @@
 - 支持TPTOXY
 - php7.0+
 - 配置好https
-
-### 未来开发目标计划  
-- [ ] 优化 main.class.php 删除一些函数。
-- [ ] 分应用代理破解版权认证 (动画疯)
-- [ ] 增加日志显示 shadowsocks dnsforwarder日志显示。 
-
-已经有测试机不再闭门造车了，即将修复热点联网问题、删除本机代理只做热点代理。
-请注意防止热点机不必要的软件联网问题，以防流量走失！！！
 
 以lighttpd为例:  
 为了节省时间我已经用Termux制作好了一个https证书(`lighttpd.pem`)
