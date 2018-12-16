@@ -107,7 +107,8 @@ function get_image() {
                     $data[]=$file;
                 } else {
                     if (file_exists($file)&&$file!=$default) { 
-                        unlink($file);
+                        @unlink($file);
+                        $data[]=$default;
                     }
                 }
             }
